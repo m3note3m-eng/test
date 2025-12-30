@@ -197,33 +197,10 @@
 
         .section-header {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             align-items: center;
             margin-bottom: 24px;
             padding: 0 8px;
-        }
-
-        .section-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: rgba(255, 255, 255, 0.98);
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-            position: relative;
-            padding-left: 12px;
-        }
-
-        .section-title::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 4px;
-            height: 24px;
-            background: linear-gradient(180deg, 
-                rgba(120, 119, 198, 0.9), 
-                rgba(255, 119, 230, 0.9));
-            border-radius: 2px;
         }
 
         .section-controls {
@@ -716,7 +693,6 @@
 
             <section class="playlist-section">
                 <div class="section-header">
-                    <h3 class="section-title">Плейлист</h3>
                     <div class="section-controls">
                         <button class="add-track-btn" id="add-track-btn">
                             <i class="fas fa-plus"></i> Добавить
@@ -857,15 +833,16 @@
                 li.className = `playlist-item ${index === currentTrackIndex ? 'active' : ''}`;
                 li.dataset.index = index;
                 li.style.animation = 'fadeInUp 0.4s ease-out';
-                li.innerHTML = `
-                    <div class="playlist-icon">
-                        <i class="fas fa-music"></i>
-                    </div>
-                    <div class="playlist-info">
-                        <div class="playlist-title">${track.name || 'Без названия'}</div>
-                    </div>
-                    <div class="playlist-controls">
-                        ${isEditMode ? `
+                
+                if (isEditMode) {
+                    li.innerHTML = `
+                        <div class="playlist-icon">
+                            <i class="fas fa-music"></i>
+                        </div>
+                        <div class="playlist-info">
+                            <div class="playlist-title">${track.name || 'Без названия'}</div>
+                        </div>
+                        <div class="playlist-controls">
                             <button class="edit-btn" data-index="${index}">
                                 <i class="fas fa-edit"></i>
                             </button>
@@ -875,13 +852,20 @@
                             <button class="drag-handle" data-index="${index}">
                                 <i class="fas fa-bars"></i>
                             </button>
-                        ` : `
-                            <button class="delete-btn" data-index="${index}">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        `}
-                    </div>
-                `;
+                        </div>
+                    `;
+                } else {
+                    li.innerHTML = `
+                        <div class="playlist-icon">
+                            <i class="fas fa-music"></i>
+                        </div>
+                        <div class="playlist-info">
+                            <div class="playlist-title">${track.name || 'Без названия'}</div>
+                        </div>
+                        <div class="playlist-controls">
+                        </div>
+                    `;
+                }
                 
                 li.addEventListener('click', (e) => {
                     if (!e.target.closest('.playlist-controls')) {
@@ -902,12 +886,6 @@
                         editTrack(index);
                     });
                     
-                    deleteBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        deleteTrack(index);
-                    });
-                } else {
-                    const deleteBtn = li.querySelector('.delete-btn');
                     deleteBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
                         deleteTrack(index);
@@ -1039,11 +1017,9 @@
             if (isEditMode) {
                 editPlaylistBtn.classList.add('active');
                 editPlaylistBtn.innerHTML = '<i class="fas fa-check"></i> Готово';
-                showToast('Режим редактирования включен', 'info');
             } else {
                 editPlaylistBtn.classList.remove('active');
                 editPlaylistBtn.innerHTML = '<i class="fas fa-edit"></i> Редактировать';
-                showToast('Режим редактирования выключен', 'info');
             }
             
             renderPlaylist();
