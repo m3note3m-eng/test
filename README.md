@@ -23,9 +23,6 @@
             padding: 0;
             overflow-x: hidden;
             position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
 
         body::before {
@@ -49,15 +46,11 @@
         }
 
         .container {
-            width: 100%;
-            max-width: 500px;
+            max-width: 100%;
             margin: 0 auto;
             padding: 20px;
             backdrop-filter: blur(20px);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
         }
 
         .now-playing-card {
@@ -74,7 +67,6 @@
             position: relative;
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            width: 100%;
         }
 
         .now-playing-card::before {
@@ -96,13 +88,11 @@
             white-space: nowrap;
             margin-bottom: 16px;
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-            padding: 0 10px;
         }
 
         .progress-area {
             margin: 28px 0;
             position: relative;
-            width: 100%;
         }
 
         .progress-bar {
@@ -150,7 +140,6 @@
             font-size: 0.85rem;
             color: rgba(255, 255, 255, 0.7);
             font-weight: 500;
-            width: 100%;
         }
 
         .controls {
@@ -159,7 +148,6 @@
             align-items: center;
             gap: 20px;
             margin: 28px 0;
-            width: 100%;
         }
 
         .control-btn {
@@ -205,23 +193,19 @@
 
         .playlist-section {
             margin-top: 36px;
-            width: 100%;
         }
 
         .section-header {
             display: flex;
-            justify-content: center;
+            justify-content: flex-end;
             align-items: center;
             margin-bottom: 24px;
             padding: 0 8px;
-            width: 100%;
         }
 
         .section-controls {
             display: flex;
-            justify-content: center;
             gap: 12px;
-            width: 100%;
         }
 
         .add-track-btn, .edit-playlist-btn {
@@ -241,8 +225,6 @@
             transition: all 0.3s ease;
             backdrop-filter: blur(10px);
             box-shadow: 0 4px 20px rgba(120, 119, 198, 0.3);
-            min-width: 140px;
-            justify-content: center;
         }
 
         .edit-playlist-btn {
@@ -265,10 +247,10 @@
 
         .playlist {
             list-style: none;
-            width: 100%;
         }
 
         .playlist-item {
+            padding: 20px;
             background: linear-gradient(135deg, 
                 rgba(255, 255, 255, 0.08) 0%, 
                 rgba(255, 255, 255, 0.04) 100%);
@@ -283,8 +265,6 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
             position: relative;
             overflow: hidden;
-            width: 100%;
-            padding: 20px;
         }
 
         .playlist-item::before {
@@ -331,13 +311,11 @@
             color: rgba(120, 119, 198, 0.9);
             width: 28px;
             text-align: center;
-            flex-shrink: 0;
         }
 
         .playlist-info {
             flex: 1;
             min-width: 0;
-            overflow: hidden;
         }
 
         .playlist-title {
@@ -353,7 +331,6 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            flex-shrink: 0;
         }
 
         .edit-btn, .delete-btn, .drag-handle {
@@ -397,6 +374,7 @@
 
         .empty-playlist {
             text-align: center;
+            padding: 80px 20px;
             color: rgba(255, 255, 255, 0.5);
             background: linear-gradient(135deg, 
                 rgba(255, 255, 255, 0.05) 0%, 
@@ -405,8 +383,6 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            padding: 28px;
         }
 
         .empty-playlist i {
@@ -610,7 +586,6 @@
         @media (max-width: 480px) {
             .container {
                 padding: 16px;
-                max-width: 100%;
             }
             
             .track-title {
@@ -635,41 +610,15 @@
             
             .section-controls {
                 gap: 10px;
-                flex-direction: column;
-                align-items: center;
             }
             
             .add-track-btn, .edit-playlist-btn {
                 padding: 10px 16px;
                 font-size: 0.9rem;
-                width: 100%;
-                max-width: 200px;
             }
             
             .modal-content {
                 padding: 24px;
-            }
-            
-            .playlist-item {
-                padding: 16px;
-            }
-            
-            .playlist-controls {
-                gap: 8px;
-            }
-            
-            .edit-btn, .delete-btn, .drag-handle {
-                min-width: 36px;
-                min-height: 36px;
-                padding: 6px;
-            }
-            
-            .empty-playlist {
-                padding: 24px;
-            }
-            
-            .empty-playlist i {
-                font-size: 3rem;
             }
         }
 
