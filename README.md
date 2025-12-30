@@ -2,7 +2,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Player</title>
+    <title>Glass Audio</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -10,148 +10,347 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background: var(--tg-theme-bg-color, #1a1a2e);
-            color: var(--tg-theme-text-color, #ffffff);
+            background: linear-gradient(135deg, 
+                rgba(20, 20, 60, 0.95) 0%, 
+                rgba(10, 10, 40, 0.95) 50%, 
+                rgba(5, 5, 30, 0.95) 100%);
+            color: rgba(255, 255, 255, 0.95);
             min-height: 100vh;
             padding: 0;
             overflow-x: hidden;
-            transition: background 0.3s ease;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 230, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(100, 220, 255, 0.1) 0%, transparent 50%);
+            z-index: -1;
+            animation: liquidMove 20s ease-in-out infinite alternate;
+        }
+
+        @keyframes liquidMove {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                transform: translate(-50px, -30px) scale(1.1);
+            }
         }
 
         .container {
             max-width: 100%;
             margin: 0 auto;
-            padding: 16px;
+            padding: 20px;
+            backdrop-filter: blur(20px);
+            min-height: 100vh;
         }
 
         .now-playing-card {
-            background: var(--tg-theme-secondary-bg-color, rgba(255, 255, 255, 0.05));
-            border-radius: 20px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.12) 0%, 
+                rgba(255, 255, 255, 0.08) 100%);
+            border-radius: 28px;
+            padding: 28px;
+            margin-bottom: 28px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.1);
             text-align: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .now-playing-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.3), 
+                transparent);
         }
 
         .track-info {
-            margin-bottom: 20px;
-            padding: 10px;
+            margin-bottom: 24px;
+            padding: 12px;
+            position: relative;
         }
 
         .track-title {
-            font-size: 1.6rem;
+            font-size: 1.8rem;
             font-weight: 600;
-            color: var(--tg-theme-text-color, #ffffff);
+            color: rgba(255, 255, 255, 0.98);
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            padding: 0 10px;
+            padding: 0 12px;
             margin-bottom: 16px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.5px;
         }
 
         .progress-area {
-            margin: 24px 0;
+            margin: 28px 0;
+            position: relative;
         }
 
         .progress-bar {
-            height: 4px;
+            height: 6px;
             width: 100%;
-            background: var(--tg-theme-secondary-bg-color, rgba(255, 255, 255, 0.1));
-            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
             cursor: pointer;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.05), 
+                transparent);
+            animation: shimmer 2s infinite linear;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
 
         .progress {
             height: 100%;
             width: 0%;
-            background: var(--tg-theme-button-color, #2481cc);
-            border-radius: 2px;
+            background: linear-gradient(90deg, 
+                rgba(120, 119, 198, 0.9), 
+                rgba(255, 119, 230, 0.9));
+            border-radius: 3px;
             transition: width 0.1s linear;
+            position: relative;
+            box-shadow: 
+                0 0 20px rgba(120, 119, 198, 0.3),
+                0 0 40px rgba(255, 119, 230, 0.2);
+        }
+
+        .progress::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.2), 
+                transparent);
+            animation: progressShimmer 1.5s infinite linear;
+        }
+
+        @keyframes progressShimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
 
         .time-info {
             display: flex;
             justify-content: space-between;
             font-size: 0.85rem;
-            color: var(--tg-theme-hint-color, #a0a0c0);
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 500;
+            letter-spacing: 0.3px;
         }
 
         .controls {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 16px;
-            margin: 24px 0;
+            gap: 20px;
+            margin: 28px 0;
         }
 
         .control-btn {
-            background: var(--tg-theme-secondary-bg-color, rgba(255, 255, 255, 0.1));
-            border: none;
-            width: 48px;
-            height: 48px;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.15) 0%, 
+                rgba(255, 255, 255, 0.05) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
-            color: var(--tg-theme-text-color, #ffffff);
-            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 1.3rem;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
             justify-content: center;
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 4px 20px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
         .control-btn:active {
-            transform: scale(0.95);
-            background: var(--tg-theme-button-color, rgba(36, 129, 204, 0.3));
+            transform: scale(0.92);
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.2) 0%, 
+                rgba(255, 255, 255, 0.1) 100%);
+            box-shadow: 
+                0 2px 10px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 6px 25px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
         }
 
         .play-btn {
-            width: 60px;
-            height: 60px;
-            font-size: 1.5rem;
-            background: var(--tg-theme-button-color, #2481cc);
-            color: var(--tg-theme-button-text-color, #ffffff);
+            width: 72px;
+            height: 72px;
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, 
+                rgba(120, 119, 198, 0.9) 0%, 
+                rgba(255, 119, 230, 0.9) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 
+                0 8px 32px rgba(120, 119, 198, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .play-btn:active {
+            transform: scale(0.95);
+            box-shadow: 
+                0 4px 20px rgba(120, 119, 198, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .play-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 12px 40px rgba(120, 119, 198, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
 
         .playlist-section {
-            margin-top: 32px;
+            margin-top: 36px;
         }
 
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
+            padding: 0 8px;
         }
 
         .section-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: var(--tg-theme-text-color, #ffffff);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.98);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.5px;
+            position: relative;
+            padding-left: 12px;
         }
 
-        .add-track-btn {
-            background: var(--tg-theme-button-color, #2481cc);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            border: none;
-            padding: 10px 16px;
-            border-radius: 12px;
+        .section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(180deg, 
+                rgba(120, 119, 198, 0.9), 
+                rgba(255, 119, 230, 0.9));
+            border-radius: 2px;
+        }
+
+        .section-controls {
+            display: flex;
+            gap: 12px;
+        }
+
+        .add-track-btn, .edit-playlist-btn {
+            background: linear-gradient(135deg, 
+                rgba(120, 119, 198, 0.9) 0%, 
+                rgba(255, 119, 230, 0.9) 100%);
+            color: rgba(255, 255, 255, 0.98);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 12px 20px;
+            border-radius: 16px;
             font-size: 0.95rem;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 6px;
-            transition: transform 0.2s;
+            gap: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 4px 20px rgba(120, 119, 198, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            letter-spacing: 0.3px;
         }
 
-        .add-track-btn:active {
-            transform: scale(0.98);
+        .edit-playlist-btn {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.15) 0%, 
+                rgba(255, 255, 255, 0.05) 100%);
+            box-shadow: 
+                0 4px 20px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .edit-playlist-btn.active {
+            background: linear-gradient(135deg, 
+                rgba(120, 119, 198, 0.9) 0%, 
+                rgba(255, 119, 230, 0.9) 100%);
+            box-shadow: 
+                0 4px 20px rgba(120, 119, 198, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .add-track-btn:active, .edit-playlist-btn:active {
+            transform: scale(0.95);
+            box-shadow: 
+                0 2px 10px rgba(120, 119, 198, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .add-track-btn:hover, .edit-playlist-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 6px 25px rgba(120, 119, 198, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
 
         .playlist {
@@ -159,32 +358,75 @@
         }
 
         .playlist-item {
-            padding: 16px;
-            background: var(--tg-theme-secondary-bg-color, rgba(255, 255, 255, 0.05));
-            border-radius: 16px;
-            margin-bottom: 10px;
+            padding: 20px;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.08) 0%, 
+                rgba(255, 255, 255, 0.04) 100%);
+            border-radius: 20px;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
             cursor: pointer;
-            transition: all 0.2s ease;
-            border-left: 4px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 4px 20px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .playlist-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.1), 
+                transparent);
         }
 
         .playlist-item:active {
-            background: var(--tg-theme-secondary-bg-color, rgba(255, 255, 255, 0.1));
+            transform: scale(0.98);
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.12) 0%, 
+                rgba(255, 255, 255, 0.08) 100%);
         }
 
         .playlist-item.active {
-            background: var(--tg-theme-secondary-bg-color, rgba(36, 129, 204, 0.2));
-            border-left-color: var(--tg-theme-button-color, #2481cc);
+            background: linear-gradient(135deg, 
+                rgba(120, 119, 198, 0.2) 0%, 
+                rgba(255, 119, 230, 0.2) 100%);
+            border: 1px solid rgba(120, 119, 198, 0.3);
+            box-shadow: 
+                0 4px 25px rgba(120, 119, 198, 0.25),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .playlist-item.active::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, 
+                rgba(120, 119, 198, 0.9), 
+                rgba(255, 119, 230, 0.9));
+            border-radius: 0 2px 2px 0;
         }
 
         .playlist-icon {
-            font-size: 1.2rem;
-            margin-right: 16px;
-            color: var(--tg-theme-button-color, #2481cc);
-            width: 24px;
+            font-size: 1.3rem;
+            margin-right: 20px;
+            color: rgba(120, 119, 198, 0.9);
+            width: 28px;
             text-align: center;
+            text-shadow: 0 0 10px rgba(120, 119, 198, 0.5);
         }
 
         .playlist-info {
@@ -197,44 +439,89 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 1.05rem;
+            letter-spacing: 0.3px;
         }
 
-        .playlist-duration {
-            font-size: 0.85rem;
-            color: var(--tg-theme-hint-color, #a0a0c0);
-            margin-left: 12px;
+        .playlist-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .edit-btn, .delete-btn, .drag-handle {
+            background: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 10px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            min-height: 40px;
         }
 
         .delete-btn {
-            background: none;
-            border: none;
-            color: #ff6b6b;
-            font-size: 1rem;
-            cursor: pointer;
-            margin-left: 12px;
-            padding: 4px;
-            opacity: 0.7;
-            transition: opacity 0.2s;
+            color: rgba(255, 107, 107, 0.9);
+            border-color: rgba(255, 107, 107, 0.2);
         }
 
-        .delete-btn:active {
-            opacity: 1;
+        .edit-btn {
+            color: rgba(120, 119, 198, 0.9);
+            border-color: rgba(120, 119, 198, 0.2);
+        }
+
+        .drag-handle {
+            color: rgba(255, 255, 255, 0.5);
+            cursor: grab;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .edit-btn:hover, .delete-btn:hover, .drag-handle:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .edit-btn:active, .delete-btn:active, .drag-handle:active {
+            transform: scale(0.95);
         }
 
         .empty-playlist {
             text-align: center;
-            padding: 60px 20px;
-            color: var(--tg-theme-hint-color, #a0a0c0);
+            padding: 80px 20px;
+            color: rgba(255, 255, 255, 0.5);
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.05) 0%, 
+                rgba(255, 255, 255, 0.02) 100%);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 4px 20px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
 
         .empty-playlist i {
-            font-size: 3rem;
-            margin-bottom: 16px;
-            opacity: 0.5;
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            opacity: 0.3;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
         }
 
         .empty-playlist p {
-            margin-bottom: 8px;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
         }
 
         .modal {
@@ -244,14 +531,15 @@
             right: 0;
             bottom: 0;
             background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            padding: 16px;
+            padding: 20px;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.3s, visibility 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .modal.active {
@@ -260,148 +548,295 @@
         }
 
         .modal-content {
-            background: var(--tg-theme-bg-color, #1a1a2e);
-            border-radius: 24px;
-            padding: 24px;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.12) 0%, 
+                rgba(255, 255, 255, 0.08) 100%);
+            border-radius: 28px;
+            padding: 32px;
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             max-height: 90vh;
             overflow-y: auto;
-            transform: translateY(20px);
-            transition: transform 0.3s;
+            transform: translateY(30px) scale(0.95);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.3), 
+                transparent);
         }
 
         .modal.active .modal-content {
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
         }
 
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .modal-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: var(--tg-theme-text-color, #ffffff);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.98);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.5px;
         }
 
         .close-btn {
-            background: none;
-            border: none;
-            color: var(--tg-theme-hint-color, #a0a0c0);
-            font-size: 1.2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.3rem;
             cursor: pointer;
-            padding: 8px;
+            padding: 10px;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: rotate(90deg);
+        }
+
+        .close-btn:active {
+            transform: scale(0.9) rotate(90deg);
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         .form-label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
             font-size: 0.95rem;
-            color: var(--tg-theme-hint-color, #a0a0c0);
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+            letter-spacing: 0.3px;
         }
 
         .form-input {
             width: 100%;
-            padding: 14px 16px;
-            background: var(--tg-theme-secondary-bg-color, rgba(255, 255, 255, 0.05));
-            border: 1px solid var(--tg-theme-secondary-bg-color, rgba(255, 255, 255, 0.1));
-            border-radius: 12px;
-            color: var(--tg-theme-text-color, #ffffff);
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            color: rgba(255, 255, 255, 0.95);
             font-size: 1rem;
-            transition: border 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                inset 0 2px 4px rgba(0, 0, 0, 0.1),
+                0 1px 0 rgba(255, 255, 255, 0.05);
         }
 
         .form-input:focus {
             outline: none;
-            border-color: var(--tg-theme-button-color, #2481cc);
+            border-color: rgba(120, 119, 198, 0.5);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 
+                inset 0 2px 8px rgba(0, 0, 0, 0.2),
+                0 0 0 3px rgba(120, 119, 198, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
         }
 
         .submit-btn {
             width: 100%;
-            padding: 16px;
-            background: var(--tg-theme-button-color, #2481cc);
-            border: none;
-            border-radius: 12px;
-            color: var(--tg-theme-button-text-color, #ffffff);
-            font-size: 1rem;
+            padding: 18px;
+            background: linear-gradient(135deg, 
+                rgba(120, 119, 198, 0.9) 0%, 
+                rgba(255, 119, 230, 0.9) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            color: rgba(255, 255, 255, 0.98);
+            font-size: 1.05rem;
             font-weight: 600;
             cursor: pointer;
-            margin-top: 8px;
-            transition: transform 0.2s;
+            margin-top: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            box-shadow: 
+                0 4px 20px rgba(120, 119, 198, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
         .submit-btn:active {
             transform: scale(0.98);
+            box-shadow: 
+                0 2px 10px rgba(120, 119, 198, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 6px 25px rgba(120, 119, 198, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
 
         .toast {
             position: fixed;
-            bottom: 100px;
+            bottom: 120px;
             left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: var(--tg-theme-bg-color, #1a1a2e);
-            color: var(--tg-theme-text-color, #ffffff);
-            padding: 14px 24px;
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            transform: translateX(-50%) translateY(100px) scale(0.9);
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.15) 0%, 
+                rgba(255, 255, 255, 0.08) 100%);
+            color: rgba(255, 255, 255, 0.95);
+            padding: 18px 28px;
+            border-radius: 20px;
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.25),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
             z-index: 1000;
             opacity: 0;
-            transition: transform 0.3s, opacity 0.3s;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             text-align: center;
             max-width: 90%;
-            border: 1px solid var(--tg-theme-secondary-bg-color, rgba(255, 255, 255, 0.1));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            font-weight: 500;
+            letter-spacing: 0.3px;
         }
 
         .toast.show {
-            transform: translateX(-50%) translateY(0);
+            transform: translateX(-50%) translateY(0) scale(1);
             opacity: 1;
         }
 
         .toast.success {
-            border-left: 4px solid #4CAF50;
+            border-left: 4px solid rgba(76, 175, 80, 0.8);
+            background: linear-gradient(135deg, 
+                rgba(76, 175, 80, 0.15) 0%, 
+                rgba(76, 175, 80, 0.08) 100%);
         }
 
         .toast.error {
-            border-left: 4px solid #f44336;
+            border-left: 4px solid rgba(244, 67, 54, 0.8);
+            background: linear-gradient(135deg, 
+                rgba(244, 67, 54, 0.15) 0%, 
+                rgba(244, 67, 54, 0.08) 100%);
         }
 
         @media (max-width: 480px) {
             .container {
-                padding: 12px;
+                padding: 16px;
             }
             
             .track-title {
-                font-size: 1.4rem;
+                font-size: 1.6rem;
             }
             
             .controls {
-                gap: 12px;
+                gap: 16px;
             }
             
             .control-btn {
-                width: 44px;
-                height: 44px;
-                font-size: 1.1rem;
+                width: 52px;
+                height: 52px;
+                font-size: 1.2rem;
             }
             
             .play-btn {
-                width: 56px;
-                height: 56px;
+                width: 68px;
+                height: 68px;
+                font-size: 1.7rem;
+            }
+            
+            .section-controls {
+                gap: 10px;
+            }
+            
+            .add-track-btn, .edit-playlist-btn {
+                padding: 10px 16px;
+                font-size: 0.9rem;
+            }
+            
+            .modal-content {
+                padding: 24px;
             }
         }
 
         @media (max-width: 360px) {
             .track-title {
-                font-size: 1.3rem;
+                font-size: 1.4rem;
             }
+            
+            .section-controls {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+
+        .playlist-item.dragging {
+            opacity: 0.5;
+            background: linear-gradient(135deg, 
+                rgba(120, 119, 198, 0.15) 0%, 
+                rgba(255, 119, 230, 0.15) 100%);
+            transform: scale(0.95);
+        }
+
+        .playlist-item.drag-over {
+            border-top: 2px solid rgba(120, 119, 198, 0.9);
+            margin-top: 2px;
+        }
+
+        /* Анимация появления элементов */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .now-playing-card, .playlist-section {
+            animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Анимация переливания цвета */
+        @keyframes colorFlow {
+            0%, 100% {
+                filter: hue-rotate(0deg);
+            }
+            50% {
+                filter: hue-rotate(30deg);
+            }
+        }
+
+        .play-btn, .progress, .add-track-btn, .edit-playlist-btn.active, .submit-btn {
+            animation: colorFlow 10s infinite linear;
         }
     </style>
 </head>
@@ -439,9 +874,14 @@
             <section class="playlist-section">
                 <div class="section-header">
                     <h3 class="section-title">Плейлист</h3>
-                    <button class="add-track-btn" id="add-track-btn">
-                        <i class="fas fa-plus"></i> Добавить
-                    </button>
+                    <div class="section-controls">
+                        <button class="add-track-btn" id="add-track-btn">
+                            <i class="fas fa-plus"></i> Добавить
+                        </button>
+                        <button class="edit-playlist-btn" id="edit-playlist-btn">
+                            <i class="fas fa-edit"></i> Редактировать
+                        </button>
+                    </div>
                 </div>
 
                 <ul class="playlist" id="playlist">
@@ -478,6 +918,30 @@
             </div>
             
             <button class="submit-btn" id="submit-track-btn">Добавить в плейлист</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно редактирования трека -->
+    <div class="modal" id="edit-track-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Редактировать трек</h3>
+                <button class="close-btn" id="close-edit-modal-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Ссылка на аудиофайл</label>
+                <input type="text" id="edit-track-url" class="form-input" placeholder="https://example.com/audio.mp3">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Название трека</label>
+                <input type="text" id="edit-track-name" class="form-input" placeholder="Название трека">
+            </div>
+            
+            <button class="submit-btn" id="submit-edit-track-btn">Сохранить изменения</button>
         </div>
     </div>
 
@@ -518,17 +982,26 @@
         const playlistEl = document.getElementById('playlist');
         const emptyPlaylistEl = document.getElementById('empty-playlist');
         const addTrackBtn = document.getElementById('add-track-btn');
+        const editPlaylistBtn = document.getElementById('edit-playlist-btn');
         const addTrackModal = document.getElementById('add-track-modal');
+        const editTrackModal = document.getElementById('edit-track-modal');
         const closeModalBtn = document.getElementById('close-modal-btn');
+        const closeEditModalBtn = document.getElementById('close-edit-modal-btn');
         const submitTrackBtn = document.getElementById('submit-track-btn');
+        const submitEditTrackBtn = document.getElementById('submit-edit-track-btn');
         const trackUrlInput = document.getElementById('track-url');
         const trackNameInput = document.getElementById('track-name');
+        const editTrackUrlInput = document.getElementById('edit-track-url');
+        const editTrackNameInput = document.getElementById('edit-track-name');
         const toast = document.getElementById('toast');
 
         // Состояние плеера
         let currentTrackIndex = 0;
         let isPlaying = false;
         let playlist = [];
+        let isEditMode = false;
+        let currentEditIndex = -1;
+        let dragStartIndex = -1;
 
         // Загружаем плейлист из localStorage
         function loadPlaylist() {
@@ -560,6 +1033,8 @@
             playlist.forEach((track, index) => {
                 const li = document.createElement('li');
                 li.className = `playlist-item ${index === currentTrackIndex ? 'active' : ''}`;
+                li.dataset.index = index;
+                li.style.animation = 'fadeInUp 0.4s ease-out';
                 li.innerHTML = `
                     <div class="playlist-icon">
                         <i class="fas fa-music"></i>
@@ -567,28 +1042,63 @@
                     <div class="playlist-info">
                         <div class="playlist-title">${track.name || 'Без названия'}</div>
                     </div>
-                    <div class="playlist-duration">${track.duration || '--:--'}</div>
-                    <button class="delete-btn" data-index="${index}">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    <div class="playlist-controls">
+                        ${isEditMode ? `
+                            <button class="edit-btn" data-index="${index}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete-btn" data-index="${index}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <button class="drag-handle" data-index="${index}">
+                                <i class="fas fa-bars"></i>
+                            </button>
+                        ` : `
+                            <button class="delete-btn" data-index="${index}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        `}
+                    </div>
                 `;
                 
+                // Обработка клика по элементу плейлиста
                 li.addEventListener('click', (e) => {
-                    if (!e.target.closest('.delete-btn')) {
+                    if (!e.target.closest('.playlist-controls')) {
                         playTrack(index);
                     }
                 });
                 
+                // Добавляем обработчики для режима редактирования
+                if (isEditMode) {
+                    const dragHandle = li.querySelector('.drag-handle');
+                    const editBtn = li.querySelector('.edit-btn');
+                    const deleteBtn = li.querySelector('.delete-btn');
+                    
+                    // Перетаскивание
+                    dragHandle.addEventListener('mousedown', (e) => startDrag(e, index));
+                    dragHandle.addEventListener('touchstart', (e) => startDrag(e, index));
+                    
+                    // Редактирование
+                    editBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        editTrack(index);
+                    });
+                    
+                    // Удаление
+                    deleteBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteTrack(index);
+                    });
+                } else {
+                    // Обычный режим - только удаление
+                    const deleteBtn = li.querySelector('.delete-btn');
+                    deleteBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteTrack(index);
+                    });
+                }
+                
                 playlistEl.appendChild(li);
-            });
-            
-            // Обработчики для кнопок удаления
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const index = parseInt(btn.getAttribute('data-index'));
-                    deleteTrack(index);
-                });
             });
             
             updateEmptyPlaylistVisibility();
@@ -624,8 +1134,7 @@
             
             const newTrack = {
                 url,
-                name: name || 'Без названия',
-                duration: '--:--'
+                name: name || 'Без названия'
             };
             
             playlist.push(newTrack);
@@ -643,6 +1152,63 @@
             // Очищаем поля
             trackUrlInput.value = '';
             trackNameInput.value = '';
+        }
+
+        // Редактируем трек
+        function editTrack(index) {
+            if (index < 0 || index >= playlist.length) return;
+            
+            const track = playlist[index];
+            currentEditIndex = index;
+            
+            // Заполняем форму текущими значениями
+            editTrackUrlInput.value = track.url;
+            editTrackNameInput.value = track.name;
+            
+            // Показываем модальное окно редактирования
+            editTrackModal.classList.add('active');
+        }
+
+        // Сохраняем изменения трека
+        function saveEditedTrack() {
+            if (currentEditIndex < 0 || currentEditIndex >= playlist.length) return;
+            
+            const url = editTrackUrlInput.value.trim();
+            const name = editTrackNameInput.value.trim();
+            
+            if (!url) {
+                showToast('Введите ссылку на аудиофайл', 'error');
+                return;
+            }
+            
+            // Проверяем URL
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                showToast('Неверный формат ссылки', 'error');
+                return;
+            }
+            
+            // Проверяем, есть ли уже такой трек (кроме текущего)
+            if (playlist.some((track, index) => track.url === url && index !== currentEditIndex)) {
+                showToast('Этот трек уже есть в плейлисте', 'error');
+                return;
+            }
+            
+            // Обновляем трек
+            playlist[currentEditIndex] = {
+                url,
+                name: name || 'Без названия'
+            };
+            
+            savePlaylist();
+            renderPlaylist();
+            
+            // Если редактировали текущий трек, обновляем его
+            if (currentEditIndex === currentTrackIndex) {
+                loadTrack(currentTrackIndex, false);
+            }
+            
+            showToast('Трек обновлен', 'success');
+            closeEditModal();
         }
 
         // Удаляем трек из плейлиста
@@ -674,6 +1240,115 @@
             showToast('Трек удален', 'success');
         }
 
+        // Переключение режима редактирования
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            
+            if (isEditMode) {
+                editPlaylistBtn.classList.add('active');
+                editPlaylistBtn.innerHTML = '<i class="fas fa-check"></i> Готово';
+                showToast('Режим редактирования включен', 'info');
+            } else {
+                editPlaylistBtn.classList.remove('active');
+                editPlaylistBtn.innerHTML = '<i class="fas fa-edit"></i> Редактировать';
+                showToast('Режим редактирования выключен', 'info');
+            }
+            
+            renderPlaylist();
+        }
+
+        // Функции для перетаскивания
+        function startDrag(e, index) {
+            e.preventDefault();
+            dragStartIndex = index;
+            
+            const li = playlistEl.children[index];
+            li.classList.add('dragging');
+            
+            // Добавляем обработчики для перетаскивания
+            document.addEventListener('mousemove', handleDrag);
+            document.addEventListener('mouseup', stopDrag);
+            document.addEventListener('touchmove', handleDrag);
+            document.addEventListener('touchend', stopDrag);
+        }
+
+        function handleDrag(e) {
+            e.preventDefault();
+            
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            if (!clientY) return;
+            
+            // Находим элемент, над которым происходит перетаскивание
+            const playlistItems = Array.from(playlistEl.children);
+            const draggingItem = playlistEl.children[dragStartIndex];
+            
+            // Убираем класс drag-over у всех элементов
+            playlistItems.forEach(item => item.classList.remove('drag-over'));
+            
+            // Находим элемент, над которым находимся
+            const dragOverItem = playlistItems.find(item => {
+                const rect = item.getBoundingClientRect();
+                return clientY > rect.top && clientY < rect.bottom && item !== draggingItem;
+            });
+            
+            if (dragOverItem) {
+                dragOverItem.classList.add('drag-over');
+            }
+        }
+
+        function stopDrag(e) {
+            e.preventDefault();
+            
+            const clientY = e.clientY || (e.changedTouches && e.changedTouches[0].clientY);
+            if (!clientY || dragStartIndex === -1) return;
+            
+            // Убираем классы
+            const playlistItems = Array.from(playlistEl.children);
+            playlistItems.forEach(item => {
+                item.classList.remove('dragging');
+                item.classList.remove('drag-over');
+            });
+            
+            // Находим конечную позицию
+            let dragEndIndex = -1;
+            for (let i = 0; i < playlistItems.length; i++) {
+                const rect = playlistItems[i].getBoundingClientRect();
+                if (clientY > rect.top && clientY < rect.bottom) {
+                    dragEndIndex = i;
+                    break;
+                }
+            }
+            
+            // Если нашли позицию и она отличается от начальной
+            if (dragEndIndex !== -1 && dragEndIndex !== dragStartIndex) {
+                // Перемещаем трек в плейлисте
+                const [draggedTrack] = playlist.splice(dragStartIndex, 1);
+                playlist.splice(dragEndIndex, 0, draggedTrack);
+                
+                // Обновляем текущий индекс, если нужно
+                if (currentTrackIndex === dragStartIndex) {
+                    currentTrackIndex = dragEndIndex;
+                } else if (currentTrackIndex > dragStartIndex && currentTrackIndex <= dragEndIndex) {
+                    currentTrackIndex--;
+                } else if (currentTrackIndex < dragStartIndex && currentTrackIndex >= dragEndIndex) {
+                    currentTrackIndex++;
+                }
+                
+                savePlaylist();
+                renderPlaylist();
+                showToast('Порядок треков изменен', 'success');
+            }
+            
+            // Сбрасываем состояние
+            dragStartIndex = -1;
+            
+            // Убираем обработчики
+            document.removeEventListener('mousemove', handleDrag);
+            document.removeEventListener('mouseup', stopDrag);
+            document.removeEventListener('touchmove', handleDrag);
+            document.removeEventListener('touchend', stopDrag);
+        }
+
         // Загружаем трек
         function loadTrack(index, autoPlay = true) {
             if (index < 0 || index >= playlist.length) return;
@@ -688,16 +1363,6 @@
             
             // Устанавливаем фиксированную громкость
             audioPlayer.volume = 1.0;
-            
-            // Получаем длительность
-            if (track.duration === '--:--') {
-                audioPlayer.addEventListener('loadedmetadata', function onLoad() {
-                    track.duration = formatTime(audioPlayer.duration);
-                    savePlaylist();
-                    renderPlaylist();
-                    audioPlayer.removeEventListener('loadedmetadata', onLoad);
-                }, { once: true });
-            }
             
             currentTrackIndex = index;
             renderPlaylist();
@@ -813,6 +1478,14 @@
             addTrackModal.classList.remove('active');
         }
 
+        // Закрытие модального окна редактирования
+        function closeEditModal() {
+            editTrackModal.classList.remove('active');
+            currentEditIndex = -1;
+            editTrackUrlInput.value = '';
+            editTrackNameInput.value = '';
+        }
+
         // Инициализация
         function init() {
             // Загружаем плейлист
@@ -825,15 +1498,17 @@
             
             audioPlayer.addEventListener('timeupdate', updateProgress);
             audioPlayer.addEventListener('ended', nextTrack);
-            audioPlayer.addEventListener('loadedmetadata', () => {
-                totalTimeEl.textContent = formatTime(audioPlayer.duration);
-            });
             
             progressBar.addEventListener('click', setProgress);
             
-            // Модальное окно
+            // Кнопки управления
             addTrackBtn.addEventListener('click', openModal);
+            editPlaylistBtn.addEventListener('click', toggleEditMode);
+            
+            // Модальные окна
             closeModalBtn.addEventListener('click', closeModal);
+            closeEditModalBtn.addEventListener('click', closeEditModal);
+            
             submitTrackBtn.addEventListener('click', () => {
                 addTrack(
                     trackUrlInput.value.trim(),
@@ -841,10 +1516,18 @@
                 );
             });
             
-            // Закрытие модального окна по клику вне его
+            submitEditTrackBtn.addEventListener('click', saveEditedTrack);
+            
+            // Закрытие модальных окон по клику вне их
             addTrackModal.addEventListener('click', (e) => {
                 if (e.target === addTrackModal) {
                     closeModal();
+                }
+            });
+            
+            editTrackModal.addEventListener('click', (e) => {
+                if (e.target === editTrackModal) {
+                    closeEditModal();
                 }
             });
             
@@ -855,6 +1538,12 @@
                         trackUrlInput.value.trim(),
                         trackNameInput.value.trim()
                     );
+                }
+            });
+            
+            editTrackUrlInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    saveEditedTrack();
                 }
             });
             
