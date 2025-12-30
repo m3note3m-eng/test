@@ -269,7 +269,6 @@
         }
 
         .playlist-item {
-            padding: 20px;
             background: linear-gradient(135deg, 
                 rgba(255, 255, 255, 0.08) 0%, 
                 rgba(255, 255, 255, 0.04) 100%);
@@ -285,6 +284,7 @@
             position: relative;
             overflow: hidden;
             width: 100%;
+            padding: 20px;
         }
 
         .playlist-item::before {
@@ -331,11 +331,13 @@
             color: rgba(120, 119, 198, 0.9);
             width: 28px;
             text-align: center;
+            flex-shrink: 0;
         }
 
         .playlist-info {
             flex: 1;
             min-width: 0;
+            overflow: hidden;
         }
 
         .playlist-title {
@@ -351,6 +353,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            flex-shrink: 0;
         }
 
         .edit-btn, .delete-btn, .drag-handle {
@@ -394,7 +397,6 @@
 
         .empty-playlist {
             text-align: center;
-            padding: 80px 20px;
             color: rgba(255, 255, 255, 0.5);
             background: linear-gradient(135deg, 
                 rgba(255, 255, 255, 0.05) 0%, 
@@ -404,6 +406,7 @@
             backdrop-filter: blur(10px);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             width: 100%;
+            padding: 28px;
         }
 
         .empty-playlist i {
@@ -659,6 +662,14 @@
                 min-width: 36px;
                 min-height: 36px;
                 padding: 6px;
+            }
+            
+            .empty-playlist {
+                padding: 24px;
+            }
+            
+            .empty-playlist i {
+                font-size: 3rem;
             }
         }
 
