@@ -3,7 +3,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Audio Stream WebApp</title>
-  <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
@@ -151,10 +150,16 @@
     const statusEl = document.getElementById('status');
     const player = document.getElementById('player');
 
+    // Инициализация Media Session API для фонового воспроизведения
+    let mediaSessionInitialized = false;
+
     const last = localStorage.getItem('stream_url');
     if (last) urlInput.value = last;
 
-    player.addEventListener('playing', () => setStatus('Идёт воспроизведение.', 'ok'));
+    player.addEventListener('playing', () => {
+      setStatus('Идёт воспроизведение.', 'ok');
+      initMediaSession();
+    });
     player.addEventListener('pause', () => setStatus('Пауза.'));
     player.addEventListener('waiting', () => setStatus('Буферизация…'));
     player.addEventListener('ended', () => {
@@ -170,6 +175,14 @@
     loadBtn.addEventListener('click', loadStream);
     playPauseBtn.addEventListener('click', playPause);
     stopBtn.addEventListener('click', stop);
+
+    // Обработчик видимости страницы для оптимизации фонового воспроизведения
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && !player.paused) {
+        // Страница скрыта, но воспроизведение продолжается
+        console.log('Приложение ушло в фон, воспроизведение продолжается');
+      }
+    });
 
     function setStatus(text, kind) {
       statusEl.textContent = text;
@@ -203,14 +216,68 @@
       }
       if (player.paused) {
         try {
+          // Устанавливаем флаг для фонового воспроизведения
+          player.setAttribute('playsinline', '');
+          player.setAttribute('webkit-playsinline', '');
+          
           await player.play();
           updatePlayButton(true);
+          
+          // Запрашиваем разрешение на фоновое воспроизведение (если нужно)
+          if ('wakeLock' in navigator) {
+            try {
+              const wakeLock = await navigator.wakeLock.request('screen');
+              wakeLock.addEventListener('release', () => {
+                console.log('Wake Lock был освобожден');
+              });
+            } catch (err) {
+              console.log('Wake Lock не поддерживается или ошибка:', err);
+            }
+          }
         } catch (err) {
           setStatus('Автовоспроизведение заблокировано. Нажмите кнопку Play.', 'error');
         }
       } else {
         player.pause();
         updatePlayButton(false);
+        
+        // Освобождаем Wake Lock при паузе
+        if ('wakeLock' in navigator && window.wakeLock) {
+          window.wakeLock.release().then(() => {
+            window.wakeLock = null;
+          });
+        }
+      }
+    }
+
+    function initMediaSession() {
+      if (mediaSessionInitialized || !('mediaSession' in navigator)) return;
+      
+      try {
+        // Устанавливаем метаданные для медиасессии
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: 'Аудиопоток',
+          artist: urlInput.value || 'Пользовательский поток',
+          album: 'Telegram WebApp Audio'
+        });
+
+        // Устанавливаем обработчики действий
+        navigator.mediaSession.setActionHandler('play', () => {
+          if (player.paused) playPause();
+        });
+
+        navigator.mediaSession.setActionHandler('pause', () => {
+          if (!player.paused) playPause();
+        });
+
+        navigator.mediaSession.setActionHandler('stop', stop);
+
+        // Обновляем состояние воспроизведения
+        navigator.mediaSession.playbackState = player.paused ? 'paused' : 'playing';
+
+        mediaSessionInitialized = true;
+      } catch (error) {
+        console.log('Media Session API не поддерживается:', error);
       }
     }
 
@@ -221,10 +288,30 @@
       player.load();
       updatePlayButton(false);
       setStatus('Остановлено.');
+      
+      // Очищаем медиасессию
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = null;
+        navigator.mediaSession.playbackState = 'none';
+      }
+      
+      mediaSessionInitialized = false;
+      
+      // Освобождаем Wake Lock
+      if ('wakeLock' in navigator && window.wakeLock) {
+        window.wakeLock.release().then(() => {
+          window.wakeLock = null;
+        });
+      }
     }
 
     function updatePlayButton(isPlaying) {
       playPauseBtn.textContent = isPlaying ? '⏸ Пауза' : '▶︎ Воспроизвести';
+      
+      // Обновляем состояние медиасессии
+      if ('mediaSession' in navigator && mediaSessionInitialized) {
+        navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+      }
     }
 
     urlInput.addEventListener('keydown', (e) => {
