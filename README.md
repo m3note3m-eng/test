@@ -47,25 +47,33 @@
     <audio id="player" controls></audio>
   </div>
 
-  <!-- Подключение Telegram WebApp API -->
+  <!-- Telegram WebApp API -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
+    const player = document.getElementById('player');
+
     function playAudio() {
       const url = document.getElementById('audioUrl').value;
-      const player = document.getElementById('player');
       if (url) {
         player.src = url;
-        player.play();
-        // Отправим событие в Telegram
-        Telegram.WebApp.sendData("Воспроизведение: " + url);
+        player.play().then(() => {
+          // Сообщаем в Telegram, что началось воспроизведение
+          Telegram.WebApp.sendData("Фоновое воспроизведение: " + url);
+        }).catch(err => {
+          alert("Ошибка воспроизведения: " + err);
+        });
       } else {
         alert("Введите корректную ссылку на аудио!");
       }
     }
 
-    // Настройка темы Telegram
+    // Настройка Telegram WebApp
     Telegram.WebApp.ready();
     document.body.style.backgroundColor = Telegram.WebApp.backgroundColor;
+
+    // Включаем фоновое воспроизведение
+    player.setAttribute("playsinline", "true"); // для iOS
+    player.loop = true; // при желании можно зациклить
   </script>
 </body>
 </html>
