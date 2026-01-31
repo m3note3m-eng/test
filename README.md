@@ -1,7 +1,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Telegram Mini Audio Player</title>
+  <title>Telegram Radio Stream</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -14,6 +14,9 @@
       border-radius: 10px;
       padding: 15px;
       box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    h3 {
+      margin-top: 0;
     }
     input[type="text"] {
       width: 100%;
@@ -29,6 +32,7 @@
       padding: 8px 12px;
       border-radius: 5px;
       cursor: pointer;
+      margin-right: 5px;
     }
     button:hover {
       background-color: #006699;
@@ -41,39 +45,41 @@
 </head>
 <body>
   <div class="container">
-    <h3>🎵 Мини‑плеер</h3>
-    <input type="text" id="audioUrl" placeholder="https://example.com/audio.mp3">
-    <button onclick="playAudio()">▶ Воспроизвести</button>
-    <audio id="player" controls></audio>
+    <h3>📻 Радио‑стрим</h3>
+    <input type="text" id="streamUrl" placeholder="http://radio.example.com:8000/stream.mp3">
+    <button onclick="startStream()">▶ Старт</button>
+    <button onclick="stopStream()">⏹ Стоп</button>
+    <audio id="radioPlayer" controls autoplay playsinline></audio>
   </div>
 
   <!-- Telegram WebApp API -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
-    const player = document.getElementById('player');
+    const player = document.getElementById('radioPlayer');
 
-    function playAudio() {
-      const url = document.getElementById('audioUrl').value;
+    function startStream() {
+      const url = document.getElementById('streamUrl').value;
       if (url) {
         player.src = url;
         player.play().then(() => {
-          // Сообщаем в Telegram, что началось воспроизведение
-          Telegram.WebApp.sendData("Фоновое воспроизведение: " + url);
+          Telegram.WebApp.sendData("Стрим запущен: " + url);
         }).catch(err => {
           alert("Ошибка воспроизведения: " + err);
         });
       } else {
-        alert("Введите корректную ссылку на аудио!");
+        alert("Введите ссылку на радио‑стрим!");
       }
+    }
+
+    function stopStream() {
+      player.pause();
+      player.src = "";
+      Telegram.WebApp.sendData("Стрим остановлен");
     }
 
     // Настройка Telegram WebApp
     Telegram.WebApp.ready();
     document.body.style.backgroundColor = Telegram.WebApp.backgroundColor;
-
-    // Включаем фоновое воспроизведение
-    player.setAttribute("playsinline", "true"); // для iOS
-    player.loop = true; // при желании можно зациклить
   </script>
 </body>
 </html>
