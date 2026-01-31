@@ -175,24 +175,63 @@
             min-height: 20px;
         }
 
-        /* Telegram стилизация */
-        .telegram-header {
-            background: var(--tg-theme-bg-color, #1e2734);
+        .background-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0;
             padding: 10px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
         }
 
-        @media (prefers-color-scheme: light) {
-            body {
-                background: var(--tg-theme-bg-color, #f2f2f7);
-                color: var(--tg-theme-text-color, #000000);
-            }
-            
-            .url-input {
-                background: var(--tg-theme-secondary-bg-color, #ffffff);
-            }
+        .toggle-label {
+            font-size: 14px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.2);
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: var(--tg-theme-button-color, #2ea6ff);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
         }
     </style>
 </head>
@@ -223,6 +262,14 @@
             <button class="control-btn" id="nextBtn">⏭</button>
         </div>
         
+        <div class="background-toggle">
+            <span class="toggle-label">Фоновое воспроизведение</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="backgroundToggle">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        
         <div class="volume-container">
             <span>🔈</span>
             <div class="volume-slider" id="volumeSlider">
@@ -247,6 +294,12 @@
         // Telegram WebApp инициализация
         const tg = window.Telegram?.WebApp;
         
+        // Объект для управления медиасессией (для уведомлений и управления)
+        let mediaSession = null;
+        let audioContext = null;
+        let sourceNode = null;
+        
+        // Инициализация Telegram WebApp
         if (tg) {
             tg.expand();
             tg.ready();
@@ -264,22 +317,7 @@
             };
             
             applyTheme();
-            
-            // Обновляем тему при изменении
             tg.onEvent('themeChanged', applyTheme);
-            
-            // Отправляем данные в Telegram при изменении трека
-            const sendPlayerState = () => {
-                const state = {
-                    type: 'player_state',
-                    isPlaying: isPlaying,
-                    currentTime: audio.currentTime,
-                    duration: audio.duration,
-                    track: trackTitle.textContent,
-                    volume: audio.volume
-                };
-                tg.sendData(JSON.stringify(state));
-            };
         }
 
         // Основной аудио элемент
@@ -299,9 +337,17 @@
         const trackTitle = document.getElementById('trackTitle');
         const trackArtist = document.getElementById('trackArtist');
         const statusEl = document.getElementById('status');
+        const backgroundToggle = document.getElementById('backgroundToggle');
         
         // Состояние плеера
         let isPlaying = false;
+        let enableBackgroundPlay = false;
+        let currentTrack = {
+            title: 'Не выбрано',
+            artist: 'Загрузите аудио по ссылке',
+            url: ''
+        };
+        
         audio.volume = 0.7;
         volumeLevel.style.width = '70%';
 
@@ -334,6 +380,63 @@
             volumeLevel.style.width = `${percent * 100}%`;
         };
 
+        // Инициализация Media Session API
+        const initMediaSession = () => {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.setActionHandler('play', togglePlay);
+                navigator.mediaSession.setActionHandler('pause', togglePlay);
+                navigator.mediaSession.setActionHandler('seekbackward', () => {
+                    audio.currentTime = Math.max(0, audio.currentTime - 10);
+                });
+                navigator.mediaSession.setActionHandler('seekforward', () => {
+                    audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
+                });
+                navigator.mediaSession.setActionHandler('previoustrack', () => {
+                    audio.currentTime = 0;
+                });
+                
+                updateMediaMetadata();
+            }
+        };
+
+        const updateMediaMetadata = () => {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: currentTrack.title,
+                    artist: currentTrack.artist,
+                    artwork: [
+                        { src: 'https://via.placeholder.com/96x96', sizes: '96x96', type: 'image/png' },
+                        { src: 'https://via.placeholder.com/128x128', sizes: '128x128', type: 'image/png' },
+                        { src: 'https://via.placeholder.com/192x192', sizes: '192x192', type: 'image/png' },
+                        { src: 'https://via.placeholder.com/256x256', sizes: '256x256', type: 'image/png' },
+                        { src: 'https://via.placeholder.com/384x384', sizes: '384x384', type: 'image/png' },
+                        { src: 'https://via.placeholder.com/512x512', sizes: '512x512', type: 'image/png' }
+                    ]
+                });
+            }
+        };
+
+        // Фоновое воспроизведение с использованием AudioContext
+        const setupBackgroundAudio = () => {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Восстанавливаем аудиоконтекст при пользовательском взаимодействии
+                document.addEventListener('click', () => {
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume();
+                    }
+                }, { once: true });
+            }
+            
+            if (sourceNode) {
+                sourceNode.disconnect();
+            }
+            
+            sourceNode = audioContext.createMediaElementSource(audio);
+            sourceNode.connect(audioContext.destination);
+        };
+
         const togglePlay = () => {
             if (!audio.src) {
                 showStatus('Сначала загрузите аудио');
@@ -343,11 +446,30 @@
             if (isPlaying) {
                 audio.pause();
                 playBtn.textContent = '▶';
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.playbackState = 'paused';
+                }
             } else {
+                // Включаем фоновое воспроизведение если нужно
+                if (enableBackgroundPlay && !audioContext) {
+                    setupBackgroundAudio();
+                }
+                
                 audio.play()
                     .then(() => {
                         playBtn.textContent = '⏸';
-                        if (tg) sendPlayerState();
+                        if ('mediaSession' in navigator) {
+                            navigator.mediaSession.playbackState = 'playing';
+                        }
+                        
+                        // Сохраняем состояние для восстановления
+                        if (enableBackgroundPlay) {
+                            localStorage.setItem('lastAudioState', JSON.stringify({
+                                url: currentTrack.url,
+                                time: audio.currentTime,
+                                playing: true
+                            }));
+                        }
                     })
                     .catch(e => {
                         showStatus('Ошибка воспроизведения: ' + e.message);
@@ -366,25 +488,72 @@
             showStatus('Загрузка...');
             
             // Проверяем, поддерживается ли формат
-            if (!url.match(/\.(mp3|m3u8|aac|ogg|wav)$/i) && !url.includes('stream')) {
+            if (!url.match(/\.(mp3|m3u8|aac|ogg|wav|flac)$/i) && !url.includes('stream')) {
                 showStatus('Формат может не поддерживаться');
             }
 
             audio.src = url;
             audio.load();
+            
+            // Сохраняем информацию о треке
+            const fileName = url.split('/').pop().split('?')[0] || 'Аудио поток';
+            currentTrack = {
+                title: decodeURIComponent(fileName.replace(/\.[^/.]+$/, "")) || 'Аудио поток',
+                artist: 'Прямая трансляция',
+                url: url
+            };
 
             audio.onloadedmetadata = () => {
                 durationEl.textContent = formatTime(audio.duration);
-                trackTitle.textContent = url.split('/').pop().split('?')[0] || 'Аудио поток';
-                trackArtist.textContent = 'Прямая трансляция';
+                trackTitle.textContent = currentTrack.title;
+                trackArtist.textContent = currentTrack.artist;
                 showStatus('Загружено');
-                if (tg) sendPlayerState();
+                
+                // Обновляем медиаметаданные
+                updateMediaMetadata();
+                
+                // Включаем фоновое воспроизведение если нужно
+                if (enableBackgroundPlay) {
+                    setupBackgroundAudio();
+                }
+                
+                // Инициализируем медиасессию
+                initMediaSession();
+                
+                // Автовоспроизведение
+                setTimeout(() => togglePlay(), 500);
             };
 
             audio.onerror = () => {
                 showStatus('Ошибка загрузки аудио');
                 audio.src = '';
             };
+        };
+
+        // Восстановление состояния при загрузке
+        const restoreState = () => {
+            try {
+                const savedState = localStorage.getItem('lastAudioState');
+                if (savedState) {
+                    const state = JSON.parse(savedState);
+                    if (state.url) {
+                        audioUrlInput.value = state.url;
+                        setTimeout(() => {
+                            audio.addEventListener('loadedmetadata', () => {
+                                if (state.time) {
+                                    audio.currentTime = state.time;
+                                }
+                                if (state.playing) {
+                                    setTimeout(() => togglePlay(), 100);
+                                }
+                            }, { once: true });
+                            loadAudio();
+                        }, 100);
+                    }
+                }
+            } catch (e) {
+                console.log('Не удалось восстановить состояние');
+            }
         };
 
         const showStatus = (message) => {
@@ -396,15 +565,37 @@
             }, 3000);
         };
 
+        // Обработчики видимости страницы
+        const handleVisibilityChange = () => {
+            if (enableBackgroundPlay && audioContext && document.hidden) {
+                // При скрытии страницы сохраняем состояние
+                if (!audio.paused) {
+                    localStorage.setItem('lastAudioState', JSON.stringify({
+                        url: currentTrack.url,
+                        time: audio.currentTime,
+                        playing: true
+                    }));
+                }
+            }
+        };
+
         // Инициализация событий
         const init = () => {
+            // Восстанавливаем состояние
+            restoreState();
+            
             // Аудио события
             audio.addEventListener('timeupdate', updateProgress);
             audio.addEventListener('ended', () => {
                 isPlaying = false;
                 playBtn.textContent = '▶';
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.playbackState = 'paused';
+                }
                 showStatus('Воспроизведение завершено');
-                if (tg) sendPlayerState();
+                
+                // Очищаем сохраненное состояние
+                localStorage.removeItem('lastAudioState');
             });
 
             // UI события
@@ -417,14 +608,44 @@
                 if (e.key === 'Enter') loadAudio();
             });
 
-            // Предыдущий/следующий трек (базовая реализация)
+            // Предыдущий/следующий трек
             document.getElementById('prevBtn').addEventListener('click', () => {
                 audio.currentTime = Math.max(0, audio.currentTime - 10);
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.setActionHandler('seekbackward', null);
+                    setTimeout(() => {
+                        navigator.mediaSession.setActionHandler('seekbackward', () => {
+                            audio.currentTime = Math.max(0, audio.currentTime - 10);
+                        });
+                    }, 100);
+                }
             });
 
             document.getElementById('nextBtn').addEventListener('click', () => {
                 audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.setActionHandler('seekforward', null);
+                    setTimeout(() => {
+                        navigator.mediaSession.setActionHandler('seekforward', () => {
+                            audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
+                        });
+                    }, 100);
+                }
             });
+
+            // Переключатель фонового воспроизведения
+            backgroundToggle.addEventListener('change', (e) => {
+                enableBackgroundPlay = e.target.checked;
+                if (enableBackgroundPlay && audio.src) {
+                    setupBackgroundAudio();
+                    showStatus('Фоновое воспроизведение включено');
+                } else {
+                    showStatus('Фоновое воспроизведение выключено');
+                }
+            });
+
+            // Обработка видимости страницы
+            document.addEventListener('visibilitychange', handleVisibilityChange);
 
             // Обработка ссылок из Telegram
             if (tg && tg.initDataUnsafe?.start_param) {
@@ -434,10 +655,27 @@
                     setTimeout(loadAudio, 500);
                 }
             }
+            
+            // Автовключение фонового воспроизведения для мобильных устройств
+            if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                backgroundToggle.checked = true;
+                enableBackgroundPlay = true;
+            }
         };
 
         // Запуск приложения
         document.addEventListener('DOMContentLoaded', init);
+        
+        // Сохраняем состояние при закрытии
+        window.addEventListener('beforeunload', () => {
+            if (enableBackgroundPlay && audio.src && !audio.paused) {
+                localStorage.setItem('lastAudioState', JSON.stringify({
+                    url: currentTrack.url,
+                    time: audio.currentTime,
+                    playing: true
+                }));
+            }
+        });
     </script>
 </body>
 </html>
