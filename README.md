@@ -1,7 +1,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Аудиоплеер</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -9,67 +9,70 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
         }
 
         body {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #0f0f23;
+            color: #ffffff;
             min-height: 100vh;
-            padding: 20px;
+            padding: 12px;
             display: flex;
             justify-content: center;
             align-items: center;
+            line-height: 1.4;
         }
 
         .container {
             width: 100%;
-            max-width: 800px;
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
+            max-width: 500px;
+            background: #1a1a2e;
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
+        /* Player section */
         .player {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 15px;
-            padding: 30px;
-            margin: 30px;
+            background: #16213e;
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .now-playing {
             display: flex;
             align-items: center;
-            margin-bottom: 40px;
+            margin-bottom: 24px;
         }
 
         .cover {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(45deg, #00b4db, #0083b0);
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
             border-radius: 10px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 2rem;
-            margin-right: 20px;
+            font-size: 1.5rem;
+            margin-right: 16px;
             flex-shrink: 0;
         }
 
         .track-info h2 {
-            font-size: 1.3rem;
-            margin-bottom: 5px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 300px;
+            max-width: 250px;
         }
 
         .track-info p {
-            color: #aaa;
-            font-size: 0.9rem;
+            color: #8a8a9e;
+            font-size: 0.85rem;
         }
 
         .controls {
@@ -80,83 +83,106 @@
         }
 
         .control-btn {
-            background: transparent;
+            background: rgba(255, 255, 255, 0.1);
             border: none;
-            color: #fff;
-            font-size: 1.3rem;
+            color: #ffffff;
+            font-size: 1.1rem;
             cursor: pointer;
-            width: 45px;
-            height: 45px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: background 0.3s;
+            transition: all 0.2s ease;
+            touch-action: manipulation;
         }
 
-        .control-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
+        .control-btn:active {
+            transform: scale(0.95);
+            background: rgba(255, 255, 255, 0.2);
         }
 
         .play-btn {
-            background: linear-gradient(135deg, #00b4db, #0083b0);
-            width: 55px;
-            height: 55px;
-            font-size: 1.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            width: 50px;
+            height: 50px;
+            font-size: 1.3rem;
         }
 
-        .play-btn:hover {
-            transform: scale(1.05);
+        .play-btn:active {
+            transform: scale(0.95);
         }
 
+        /* Input area */
         .input-area {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 15px;
-            padding: 20px;
-            margin: 0 30px 20px;
+            background: #1a1a2e;
+            padding: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .input-group {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
 
         .input-group input {
             flex: 1;
-            padding: 10px 15px;
+            padding: 12px 14px;
             border-radius: 10px;
-            border: none;
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
             font-size: 0.95rem;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: #667eea;
         }
 
         .input-group input::placeholder {
-            color: #aaa;
+            color: #8a8a9e;
         }
 
         .input-group button {
-            padding: 10px 15px;
+            padding: 12px 16px;
             border-radius: 10px;
             border: none;
-            background: linear-gradient(90deg, #00b4db, #0083b0);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             font-weight: 600;
+            font-size: 0.95rem;
             cursor: pointer;
-            transition: transform 0.3s;
+            transition: all 0.2s ease;
+            touch-action: manipulation;
+            white-space: nowrap;
         }
 
-        .input-group button:hover {
-            transform: scale(1.05);
+        .input-group button:active {
+            transform: scale(0.98);
         }
 
+        /* Playlist */
         .playlist {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 15px;
-            padding: 20px;
-            margin: 0 30px 30px;
-            max-height: 250px;
+            background: #1a1a2e;
+            padding: 16px;
+            max-height: 300px;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .playlist::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .playlist::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .playlist::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
         }
 
         .playlist ul {
@@ -164,24 +190,26 @@
         }
 
         .playlist li {
-            padding: 10px 12px;
-            border-radius: 8px;
+            padding: 12px;
+            border-radius: 10px;
             margin-bottom: 8px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: rgba(255, 255, 255, 0.05);
-            transition: background 0.3s;
+            background: rgba(255, 255, 255, 0.03);
+            transition: all 0.2s ease;
+            touch-action: manipulation;
         }
 
-        .playlist li:hover {
-            background: rgba(255, 255, 255, 0.1);
+        .playlist li:active {
+            background: rgba(255, 255, 255, 0.08);
+            transform: scale(0.99);
         }
 
         .playlist li.active {
-            background: rgba(0, 180, 219, 0.2);
-            border-left: 3px solid #00b4db;
+            background: rgba(102, 126, 234, 0.15);
+            border-left: 3px solid #667eea;
         }
 
         .track-content {
@@ -196,48 +224,42 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 200px;
-            cursor: pointer;
-            padding: 2px 4px;
-            border-radius: 4px;
-            transition: background 0.2s;
-        }
-
-        .track-title:hover {
-            background: rgba(255, 255, 255, 0.05);
+            max-width: 180px;
+            font-size: 0.95rem;
         }
 
         .track-title.editing {
             background: rgba(255, 255, 255, 0.1);
-            border: 1px solid #00b4db;
+            border: 1px solid #667eea;
             cursor: text;
             white-space: normal;
         }
 
         .track-title-input {
             background: transparent;
-            border: 1px solid #00b4db;
+            border: 1px solid #667eea;
             color: #fff;
             font-size: 0.95rem;
             font-weight: 500;
-            padding: 2px 4px;
-            border-radius: 4px;
+            padding: 4px 6px;
+            border-radius: 6px;
             width: 100%;
             font-family: inherit;
+            outline: none;
         }
 
         .track-url {
-            color: #aaa;
+            color: #8a8a9e;
             font-size: 0.8rem;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 200px;
+            max-width: 180px;
         }
 
         .track-actions {
             display: flex;
-            gap: 5px;
+            gap: 6px;
             flex-shrink: 0;
         }
 
@@ -245,31 +267,193 @@
             background: rgba(255, 255, 255, 0.1);
             border: none;
             color: #fff;
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.2s ease;
+            touch-action: manipulation;
+            font-size: 0.9rem;
         }
 
-        .edit-btn:hover {
-            background: rgba(0, 180, 219, 0.3);
-            color: #00b4db;
+        .edit-btn:active, .delete-btn:active {
+            transform: scale(0.9);
         }
 
-        .delete-btn:hover {
-            background: rgba(255, 0, 0, 0.3);
-            color: #ff6b6b;
+        .edit-btn:hover, .edit-btn:active {
+            background: rgba(102, 126, 234, 0.3);
+            color: #a3b4ff;
+        }
+
+        .delete-btn:hover, .delete-btn:active {
+            background: rgba(255, 107, 107, 0.3);
+            color: #ff9e9e;
         }
 
         .empty-playlist {
             text-align: center;
-            color: #aaa;
-            padding: 15px;
+            color: #8a8a9e;
+            padding: 24px 16px;
             font-style: italic;
+            font-size: 0.95rem;
+        }
+
+        /* Адаптивность для маленьких экранов */
+        @media (max-width: 480px) {
+            body {
+                padding: 8px;
+            }
+            
+            .container {
+                border-radius: 12px;
+            }
+            
+            .player {
+                padding: 16px;
+            }
+            
+            .cover {
+                width: 50px;
+                height: 50px;
+                font-size: 1.3rem;
+            }
+            
+            .track-info h2 {
+                font-size: 1rem;
+                max-width: 200px;
+            }
+            
+            .track-info p {
+                font-size: 0.8rem;
+            }
+            
+            .controls {
+                gap: 16px;
+            }
+            
+            .control-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            
+            .play-btn {
+                width: 46px;
+                height: 46px;
+                font-size: 1.2rem;
+            }
+            
+            .input-area {
+                padding: 14px;
+            }
+            
+            .input-group input {
+                padding: 10px 12px;
+                font-size: 0.9rem;
+            }
+            
+            .input-group button {
+                padding: 10px 14px;
+                font-size: 0.9rem;
+            }
+            
+            .playlist {
+                padding: 14px;
+                max-height: 250px;
+            }
+            
+            .playlist li {
+                padding: 10px;
+            }
+            
+            .track-title {
+                max-width: 140px;
+                font-size: 0.9rem;
+            }
+            
+            .track-url {
+                max-width: 140px;
+                font-size: 0.75rem;
+            }
+            
+            .edit-btn, .delete-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .cover {
+                width: 44px;
+                height: 44px;
+                margin-right: 12px;
+            }
+            
+            .track-info h2 {
+                max-width: 160px;
+            }
+            
+            .track-title {
+                max-width: 120px;
+            }
+            
+            .track-url {
+                max-width: 120px;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+            
+            .input-group button {
+                width: 100%;
+            }
+        }
+
+        /* Для очень высоких экранов */
+        @media (min-height: 700px) {
+            .playlist {
+                max-height: 350px;
+            }
+        }
+
+        @media (min-height: 800px) {
+            .playlist {
+                max-height: 400px;
+            }
+        }
+
+        /* Анимации для Telegram */
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Улучшение доступности для тач-устройств */
+        @media (hover: none) and (pointer: coarse) {
+            .control-btn:hover,
+            .input-group button:hover,
+            .playlist li:hover,
+            .edit-btn:hover,
+            .delete-btn:hover {
+                transform: none;
+            }
+            
+            .control-btn:active,
+            .input-group button:active,
+            .playlist li:active,
+            .edit-btn:active,
+            .delete-btn:active {
+                transform: scale(0.95);
+            }
         }
     </style>
 </head>
@@ -301,7 +485,7 @@
         
         <div class="input-area">
             <div class="input-group">
-                <input type="url" id="audio-url" placeholder="URL аудио">
+                <input type="url" id="audio-url" placeholder="Вставьте ссылку на аудио" inputmode="url">
                 <button id="add-btn">Добавить</button>
             </div>
         </div>
@@ -368,6 +552,9 @@
                 });
                 
                 updateButtons();
+                
+                // Фокус на поле ввода при загрузке
+                setTimeout(() => urlInput.focus(), 300);
             }
             
             // Загрузка трека
@@ -434,7 +621,8 @@
             
             // Обновление кнопки воспроизведения
             function updatePlayButton() {
-                playBtn.querySelector('i').className = playing ? 'fas fa-pause' : 'fas fa-play';
+                const icon = playBtn.querySelector('i');
+                icon.className = playing ? 'fas fa-pause' : 'fas fa-play';
             }
             
             // Предыдущий трек
@@ -598,6 +786,7 @@
                 
                 playlist.forEach((track, index) => {
                     const li = document.createElement('li');
+                    li.className = 'fade-in';
                     
                     const content = document.createElement('div');
                     content.className = 'track-content';
@@ -639,16 +828,27 @@
                     li.appendChild(content);
                     li.appendChild(actions);
                     
+                    // Редактирование по двойному клику
                     title.addEventListener('dblclick', (e) => {
                         e.stopPropagation();
                         editTitle(index);
                     });
                     
-                    title.addEventListener('click', (e) => {
-                        if (editingIndex !== index) {
-                            e.stopPropagation();
+                    // Редактирование по долгому нажатию (для мобильных)
+                    let pressTimer;
+                    title.addEventListener('touchstart', (e) => {
+                        e.stopPropagation();
+                        pressTimer = setTimeout(() => {
                             editTitle(index);
-                        }
+                        }, 500);
+                    });
+                    
+                    title.addEventListener('touchend', () => {
+                        clearTimeout(pressTimer);
+                    });
+                    
+                    title.addEventListener('touchmove', () => {
+                        clearTimeout(pressTimer);
                     });
                     
                     li.addEventListener('click', () => {
