@@ -1,0 +1,215 @@
+
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Glass Audio Player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .player {
+      width: 350px;
+      padding: 25px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    h2 {
+      text-align: center;
+      margin: 0 0 20px 0;
+      font-size: 24px;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .play-btn {
+      background: rgba(120, 100, 255, 0.3);
+      padding: 12px 25px;
+    }
+
+    .add-track {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    li {
+      padding: 10px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      margin-bottom: 5px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    li.active {
+      background: rgba(100, 80, 255, 0.3);
+    }
+
+    .remove-btn {
+      padding: 2px 8px;
+      background: rgba(255, 50, 50, 0.2);
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="player">
+    <h2>🎵 Glass Player</h2>
+    
+    <div class="add-track">
+      <input type="text" id="urlInput" placeholder="Ссылка на аудио">
+      <button onclick="addTrack()">Добавить</button>
+    </div>
+
+    <ul id="playlist"></ul>
+
+    <div class="controls">
+      <button onclick="prevTrack()">⏮️</button>
+      <button class="play-btn" onclick="playPause()" id="playBtn">▶️</button>
+      <button onclick="nextTrack()">⏭️</button>
+    </div>
+  </div>
+
+  <audio id="audio"></audio>
+
+  <script>
+    const audio = document.getElementById('audio');
+    const playlistEl = document.getElementById('playlist');
+    const playBtn = document.getElementById('playBtn');
+    
+    let playlist = [];
+    let currentIndex = -1;
+
+    function addTrack() {
+      const input = document.getElementById('urlInput');
+      const url = input.value.trim();
+      
+      if (url) {
+        playlist.push(url);
+        renderPlaylist();
+        input.value = '';
+      }
+    }
+
+    function renderPlaylist() {
+      playlistEl.innerHTML = '';
+      
+      playlist.forEach((url, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          ${index + 1}. ${url.substring(0, 40)}${url.length > 40 ? '...' : ''}
+          <button class="remove-btn" onclick="removeTrack(${index})">×</button>
+        `;
+        
+        li.onclick = () => playTrack(index);
+        
+        if (index === currentIndex) {
+          li.classList.add('active');
+        }
+        
+        playlistEl.appendChild(li);
+      });
+    }
+
+    function removeTrack(index) {
+      playlist.splice(index, 1);
+      if (index === currentIndex) {
+        currentIndex = -1;
+        audio.src = '';
+        playBtn.textContent = '▶️';
+      } else if (index < currentIndex) {
+        currentIndex--;
+      }
+      renderPlaylist();
+    }
+
+    function playTrack(index) {
+      currentIndex = index;
+      audio.src = playlist[index];
+      audio.play();
+      playBtn.textContent = '⏸️';
+      renderPlaylist();
+    }
+
+    function playPause() {
+      if (!playlist.length) return;
+      
+      if (!audio.src && currentIndex < 0) {
+        playTrack(0);
+      } else if (audio.paused) {
+        audio.play();
+        playBtn.textContent = '⏸️';
+      } else {
+        audio.pause();
+        playBtn.textContent = '▶️';
+      }
+    }
+
+    function nextTrack() {
+      if (playlist.length) {
+        const next = (currentIndex + 1) % playlist.length;
+        playTrack(next);
+      }
+    }
+
+    function prevTrack() {
+      if (playlist.length) {
+        const prev = (currentIndex - 1 + playlist.length) % playlist.length;
+        playTrack(prev);
+      }
+    }
+
+    audio.addEventListener('ended', nextTrack);
+    
+    document.getElementById('urlInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') addTrack();
+    });
+  </script>
+</body>
+</html>
